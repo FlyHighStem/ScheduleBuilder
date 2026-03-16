@@ -6,4 +6,5 @@ Input your Todos with this info:
 + Importance
 + Preferred Time
 + Deadline
-The tool does the rest.
+  
+The Scehdule Builder does the rest.
