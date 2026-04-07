@@ -1,0 +1,117 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+
+    background-color: #EDE8D0;
+
+
+}
+.text-box {
+    font-family: Arial, Helvetica, sans-serif;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    
+    border: 2px solid #000000;
+    border-radius: 12px;
+    padding: 40px;
+    background-color: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background-color: white;
+    width: 100%;
+    max-width: 400px;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.login-card h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    margin-top: 12px;
+    text-align: left;
+
+}
+
+input {
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 8px;
+    outline: none;
+    transition: 0.2s;
+}
+
+input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+button {
+    margin-top: 18px;
+    padding: 13px;
+    border: none;
+    border-radius: 100px;
+    background-color: rgb(13, 0, 255);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+button:hover {
+    background-color: #0e00a6;
+}
+
+.forgotpass{
+    cursor: pointer;
+    text-align: right;
+    text-decoration: none;
+}
+
+.forgotpass:hover{
+
+    text-decoration: underline;
+}
+
+.errormessage{
+    display: none;
+    color: red;
+    margin-top: 10px;
+    font-size: 15px;
+}
