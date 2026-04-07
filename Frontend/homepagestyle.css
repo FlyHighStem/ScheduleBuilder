@@ -5,26 +5,210 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.btn {
-    display: inline-block;
-    padding: 12px 20px;
-    background-color: #4f46e5;
+body {
+    min-height: 100vh;
+    background-color: #EDE8D0;
+    color: #111;
+}
+
+/* HEADER */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background-color: #663C1F;
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 1000;
+    gap: 330px;
+
+}
+.logo{
+    height: 700px;
+    width: auto;
+    position: relative;
+    top: 20px;
+}
+.header h1 {
+   font-size: 40px;
+    font-weight: 700px;
+    letter-spacing: 2px;
+
+    font-family: 'Rajdhani', sans-serif;
     color: white;
-    text-decoration: none; /* removes underline */
-    border-radius: 10px;
-    font-weight: bold;
+}
+
+/* MAIN PAGE LAYOUT */
+.maincontent {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 85px;
+}
+
+/* LEFT SIDE */
+.leftside {
+    width: 65%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    background-color: #EDE8D0;
+}
+
+/* If you add an image later */
+.leftside img {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    border-radius: 22px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+}
+
+/* Optional placeholder box if no image yet */
+.leftside::before {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 650px;
+    min-height: 420px;
+    border: 2px dashed #777;
+    border-radius: 22px;
+    color: #555;
+    font-size: 1.2rem;
     text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.35);
 }
 
-.btn:hover {
-    background-color: #4338ca;
+/* If you add a real image, remove the placeholder text */
+.leftside:has(img)::before {
+    display: none;
 }
 
-.header{
-    min-height: 100px;
-    border: 3px solid;
-    background-color: #ede8d0;
+/* RIGHT SIDE */
+.rightside {
+    width: 35%;
+    background-color: white;
+    border-left: 1px solid black;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    padding: 0px 40px;
+}
 
+/* LOGIN CONTENT */
+.logincontent {
+    width: 100%;
+    max-width: 430px;
+}
+
+.instructions {
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.5;
+    margin-bottom: 15px;
     text-align: left;
+}
 
+.errormessage {
+    display: none;
+    color: #c62828;
+    background-color: #ffe5e5;
+    border: 1px solid #f3b2b2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 0.95rem;
+}
+
+/* FORM */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 0.95rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    margin-top: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 15px 16px;
+    border: 1px solid #cfd4dc;
+    border-radius: 14px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s ease;
+    margin-bottom: 6px;
+}
+
+input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+/* FORGOT PASSWORD */
+.forgotpass {
+    align-self: flex-end;
+    margin-top: 8px;
+    text-decoration: none;
+    color: #1d2cff;
+    font-size: 0.98rem;
+    font-weight: 500;
+}
+
+.forgotpass:hover {
+    text-decoration: underline;
+}
+
+/* BUTTON */
+.btn {
+    margin-top: 20px;         
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 999px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    display: flex;             
+    justify-content: center;   
+    align-items: center;
+}
+
+.btnsignin {
+    background-color: #1500ff;
+    color: white;
+    box-shadow: 0 10px 22px rgba(21, 0, 255, 0.2);
+}
+
+.btnsignin:hover {
+    background-color: #080251;
+    transform: translateY(-1px);
+}
+
+.btncreate {
+    background-color: transparent;
+    border: 2px solid #1500ff;
+    color: #1500ff;
+}
+
+.btncreate:hover {
+    background-color: #1500ff;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn + .btn {
+    margin-top: 12px;
 }
