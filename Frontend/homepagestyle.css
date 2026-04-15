@@ -1,54 +1,9 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-body {
-    min-height: 100vh;
-    background-color: #EDE8D0;
-    color: #111;
-}
-
-/* HEADER */
-.header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    background-color: #663C1F;
-    display: flex;
-    align-items: center;
-    padding: 0 28px;
-    z-index: 1000;
-    gap: 330px;
-
-}
-.logo{
-    height: 700px;
-    width: auto;
-    position: relative;
-    top: 20px;
-}
-.header h1 {
-   font-size: 40px;
-    font-weight: 700px;
-    letter-spacing: 2px;
-
-    font-family: 'Rajdhani', sans-serif;
-    color: white;
-}
-
-/* MAIN PAGE LAYOUT */
 .maincontent {
     display: flex;
     min-height: 100vh;
     padding-top: 85px;
 }
 
-/* LEFT SIDE */
 .leftside {
     width: 65%;
     display: flex;
@@ -58,7 +13,6 @@ body {
     background-color: #EDE8D0;
 }
 
-/* If you add an image later */
 .leftside img {
     width: 100%;
     max-width: 650px;
@@ -68,7 +22,6 @@ body {
     object-fit: cover;
 }
 
-/* Optional placeholder box if no image yet */
 .leftside::before {
     display: flex;
     justify-content: center;
@@ -85,26 +38,26 @@ body {
     background-color: rgba(255, 255, 255, 0.35);
 }
 
-/* If you add a real image, remove the placeholder text */
 .leftside:has(img)::before {
     display: none;
 }
 
-/* RIGHT SIDE */
 .rightside {
     width: 35%;
-    background-color: white;
-    border-left: 1px solid black;
+    background-color:  #EDE8D0;
     display: flex;
-    justify-content: right;
+    justify-content: center;
     align-items: center;
-    padding: 0px 40px;
+    padding: 40px;
 }
 
-/* LOGIN CONTENT */
 .logincontent {
     width: 100%;
     max-width: 430px;
+    background-color: white;
+    padding: 36px 32px;
+    border-radius: 24px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
 }
 
 .instructions {
@@ -126,89 +79,32 @@ body {
     font-size: 0.95rem;
 }
 
-/* FORM */
 form {
     display: flex;
     flex-direction: column;
 }
 
 label {
-    font-size: 0.95rem;
-    font-weight: bold;
-    margin-bottom: 8px;
     margin-top: 14px;
 }
 
 input {
-    width: 100%;
-    padding: 15px 16px;
-    border: 1px solid #cfd4dc;
-    border-radius: 14px;
-    font-size: 1rem;
-    outline: none;
-    transition: 0.2s ease;
     margin-bottom: 6px;
 }
 
-input:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
-}
-
-/* FORGOT PASSWORD */
 .forgotpass {
     align-self: flex-end;
     margin-top: 8px;
+    margin-bottom: 18px;
     text-decoration: none;
-    color: #1d2cff;
-    font-size: 0.98rem;
-    font-weight: 500;
-}
-
-.forgotpass:hover {
-    text-decoration: underline;
-}
-
-/* BUTTON */
-.btn {
-    margin-top: 20px;         
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 999px;
-    font-size: 1.15rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s ease;
-
-    display: flex;             
-    justify-content: center;   
-    align-items: center;
-}
-
-.btnsignin {
-    background-color: #1500ff;
-    color: white;
-    box-shadow: 0 10px 22px rgba(21, 0, 255, 0.2);
-}
-
-.btnsignin:hover {
-    background-color: #080251;
-    transform: translateY(-1px);
-}
-
-.btncreate {
-    background-color: transparent;
-    border: 2px solid #1500ff;
-    color: #1500ff;
-}
-
-.btncreate:hover {
-    background-color: #1500ff;
-    color: white;
-    transform: translateY(-1px);
+    color: blue;
 }
 
 .btn + .btn {
     margin-top: 12px;
+}
+
+.forgotpass:hover{
+    text-decoration: underline;
+    color: #0b036d
 }
