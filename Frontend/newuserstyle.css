@@ -1,0 +1,78 @@
+.page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 120px 20px 40px;
+}
+
+.create-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.create-card {
+    width: 100%;
+    max-width: 430px;
+    background-color: white;
+    padding: 40px 32px;
+    border-radius: 24px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+}
+
+.create-card h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 28px;
+    font-size: 1rem;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-group input {
+    margin-bottom: 0;
+}
+
+.create-btn {
+    margin-top: 12px;
+}
+
+.signin-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.95rem;
+    color: #4b5563;
+}
+
+.signin-text a {
+    font-weight: 700;
+}
+
+@media (max-width: 500px) {
+    .create-card {
+        padding: 32px 22px;
+    }
+
+    .header {
+        padding: 0 20px;
+    }
+
+    .header h1 {
+        font-size: 32px;
+    }
+}
