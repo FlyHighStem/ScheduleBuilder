@@ -1,6 +1,6 @@
 # ScheduleBuilder
 An AI tool that can build your schedule for you.
-Input your Todos with just a little information:
+Input your ToDos with just a little information:
 + Name
 + Urgency
 + Importance
