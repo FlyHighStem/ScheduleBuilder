@@ -2,6 +2,8 @@
     display: flex;
     min-height: 100vh;
     padding-top: 85px;
+    max-width: 1200px;
+    margin: 250 auto;
 }
 
 .leftside {
