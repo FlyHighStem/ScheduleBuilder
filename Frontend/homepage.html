@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome To Schedule Builder!</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="homepagestyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+     <h1>Schedule Builder</h1>
+     <img src="images/headerpic.png" alt="Logo" class="logo">
+   
+</header>
+
+ <div class="maincontent">
+    <section class="leftside">
+
+
+    </section>
+
+    <section class="rightside">
+          <div class="logincontent">
+          <p class="instructions"> Sign In</p>
+          <br>
+          <p class="errormessage">
+            The email and/or password are not correct. please try again!
+        </p>
+    
+            <form id="loginForm" action="/login" method="POST">
+            
+                <label for="email">Email:</label>
+                <input type="email" 
+                id="email" 
+                name="email" 
+                placeholder="Enter your email" 
+                />
+ 
+                <br>
+
+                <label for="password">Password:</label>
+                <input type="password" 
+                id="password"
+                name="password" 
+                placeholder="Enter your password"
+               />
+               <a href = "forgotpassword.html" class="forgotpass"> Forgot password?</a>
+
+               <br>
+
+              <button type="submit" class="btn btn-primary"> Sign In</button>
+            
+              <a href="newuser.html" class="btn btn-outline">Create Account</a>
+               </form>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+   
+</body>
+</html>

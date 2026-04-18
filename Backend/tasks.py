@@ -48,7 +48,7 @@ def home():
                     
                 });
             }
-            
+            fur
             async function addTask() {
                 const title = document.getElementbyId("title").value;
                 const priority = document.getElementbyId("priority").value;
