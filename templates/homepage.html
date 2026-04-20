@@ -4,21 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome To Schedule Builder!</title>
-    <link rel="stylesheet" href="shared.css">
-    <link rel="stylesheet" href="homepagestyle.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='homepagestyle.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<div id="navbar"></div>
+  <script>
+        fetch("navbar.html")
+        .then(response => response.text())
+         .then(data => {
+           document.getElementById("navbar").innerHTML = data;
+          });
+  </script>
+  <br><br><br>
     <header class="header">
      <h1>Schedule Builder</h1>
      <img src="images/headerpic.png" alt="Logo" class="logo">
-   
-</header>
+    </header>
 
  <div class="maincontent">
     <section class="leftside">
-
-
+        <p>
+            Welcome to Schedule Builder!<br>
+            Schedule Builder is a website<br>
+            designed to help build your<br>
+            schedule for you.
+        </p>
     </section>
 
     <section class="rightside">

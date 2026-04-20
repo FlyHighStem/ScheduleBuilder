@@ -1,0 +1,44 @@
+/* CALENDAR */
+    .container {
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: 80px repeat(7, 1fr);
+      border-top: 1px solid #ccc;
+      border-left: 1px solid #ccc;
+    }
+
+    .cell {
+      border-right: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      min-height: 60px;
+      padding: 5px;
+      background: #f3f2ee;
+    }
+
+    .header {
+      background: #975932;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .time {
+      background: #f6eee9;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .event {
+      background: #fdc4aa;
+      padding: 4px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 3px;
+    }

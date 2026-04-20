@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='tasks.css') }}">
+</head>
+<body>
+<div id="navbar"></div>
+  <script>
+        fetch("navbar.html")
+        .then(response => response.text())
+         .then(data => {
+           document.getElementById("navbar").innerHTML = data;
+          });
+  </script>
+  <br><br><br>
+  <h1>Task Manager</h1>
+  <br>
+  <div class="btn-container">
+    <a href="addtask.html" class="btn add">Add Task</a><br>
+    <a href="edittask.html" class="btn edit">Edit Task</a><br>
+    <a href="deletetask.html" class="btn delete">Delete Task</a><br>
+    <button class="btn clear">Clear All Tasks</button>
+  </div>
+
+</body>
+</html>
