@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
   <title>Add Task</title>
 
   <style>
@@ -65,14 +65,7 @@
   </style>
 </head>
 <body>
-  <div id="navbar"></div>
-  <script>
-        fetch("navbar.html")
-        .then(response => response.text())
-         .then(data => {
-           document.getElementById("navbar").innerHTML = data;
-          });
-  </script>
+  {% include 'navbar.html' %}
   <br><br><br>
   <div class="container">
     <h1>Add Task</h1>
@@ -104,7 +97,7 @@
       <input type="number" id="time" name="time" min="0" step="0.25">
 
       <!-- Submit -->
-      <a href="tasks.html" class="btn">Create Task</a>
+      <a href="/tasks" class="btn">Create Task</a>
     </form>
   </div>
 

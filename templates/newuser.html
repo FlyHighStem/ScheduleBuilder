@@ -4,18 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='newuserstyle.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/newuserstyle.css') }}">
 </head>
 <body>
-<div id="navbar"></div>
-  <script>
-        fetch("navbar.html")
-        .then(response => response.text())
-         .then(data => {
-           document.getElementById("navbar").innerHTML = data;
-          });
-  </script>
+{% include 'navbar.html' %}
   <br><br><br>
 
    <header class="header">

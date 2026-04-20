@@ -2,24 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='calendar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tasks.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/calendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}">
     <title>Delete Task</title>
 </head>
 
 <body>
 
 <!-- NAVBAR -->
-<div id="navbar"></div>
-<script>
-fetch("navbar.html")
-.then(response => response.text())
-.then(data => {
-  document.getElementById("navbar").innerHTML = data;
-});
-</script>
-
+{% include 'navbar.html' %}
 <br><br>
 
 <div class="container">

@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome To Schedule Builder!</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='homepagestyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/homepagestyle.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div id="navbar"></div>
-  <script>
-        fetch("navbar.html")
-        .then(response => response.text())
-         .then(data => {
-           document.getElementById("navbar").innerHTML = data;
-          });
-  </script>
+{% include 'navbar.html' %}
   <br><br><br>
     <header class="header">
      <h1>Schedule Builder</h1>
@@ -58,13 +51,13 @@
                 name="password" 
                 placeholder="Enter your password"
                />
-               <a href = "forgotpassword.html" class="forgotpass"> Forgot password?</a>
+               <a href = "/forgot" class="forgotpass"> Forgot password?</a>
 
                <br>
 
               <button type="submit" class="btn btn-primary"> Sign In</button>
             
-              <a href="newuser.html" class="btn btn-outline">Create Account</a>
+              <a href="/signup" class="btn btn-outline">Create Account</a>
                </form>
             </div>
         </section>
