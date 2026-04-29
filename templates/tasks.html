@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasks</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}">
+</head>
+<body>
+{% include 'navbar.html' %}
+  <br><br><br>
+  <h1>Task Manager</h1>
+  <br>
+  <div class="btn-container">
+    <a href="/add" class="btn add">Add Task</a><br>
+    <a href="/edit" class="btn edit">Edit Task</a><br>
+    <a href="/delete" class="btn delete">Delete Task</a><br>
+    <button class="btn clear">Clear All Tasks</button>
+  </div>
+
+</body>
+</html>

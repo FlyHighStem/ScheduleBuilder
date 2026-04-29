@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/calendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}">
+    <title>Delete Task</title>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+{% include 'navbar.html' %}
+<br><br>
+
+<div class="container">
+  <h1>Delete Task</h1>
+  <br><br>
+
+  <div class="calendar" id="calendar"></div>
+</div>
+
+<script>
+const calendar = document.getElementById("calendar");
+
+// 🔥 LOAD EVENTS (shared across pages)
+let events = JSON.parse(localStorage.getItem("events")) || [];
+
+let selectedEventId = null;
+
+const days = ["Time","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+// FORMAT TIME
+function formatHour(hour) {
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const h = hour % 12 === 0 ? 12 : hour % 12;
+  return h + " " + suffix;
+}
+
+// 🧠 RENDER FUNCTION (IMPORTANT)
+function renderCalendar() {
+
+  calendar.innerHTML = "";
+
+  // HEADER
+  days.forEach(day => {
+    const div = document.createElement("div");
+    div.className = "cell header";
+    div.textContent = day;
+    calendar.appendChild(div);
+  });
+
+  // 24 HOURS
+  for (let hour = 0; hour < 24; hour++) {
+
+    const timeCell = document.createElement("div");
+    timeCell.className = "cell time";
+    timeCell.textContent = formatHour(hour);
+    calendar.appendChild(timeCell);
+
+    for (let d = 0; d < 7; d++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      const event = events.find(e => e.day === d && e.hour === hour);
+
+      if (event) {
+        const evDiv = document.createElement("div");
+        evDiv.className = "event";
+        evDiv.textContent = event.title;
+
+        // ✅ SHOW SELECTION
+        if (event.id === selectedEventId) {
+          evDiv.style.outline = "3px solid red";
+        }
+
+        // ✅ CLICK TO SELECT / UNSELECT
+        evDiv.onclick = () => {
+          if (selectedEventId === event.id) {
+            selectedEventId = null; // unselect
+          } else {
+            selectedEventId = event.id; // select new
+          }
+          renderCalendar();
+        };
+
+        cell.appendChild(evDiv);
+      }
+
+      calendar.appendChild(cell);
+    }
+  }
+}
+
+// 🗑️ DELETE FUNCTION
+function deleteSelected() {
+  if (selectedEventId === null) {
+    alert("Select a task first.");
+    return;
+  }
+
+  events = events.filter(e => e.id !== selectedEventId);
+
+  localStorage.setItem("events", JSON.stringify(events));
+
+  selectedEventId = null;
+
+  renderCalendar();
+}
+
+// INITIAL RENDER
+renderCalendar();
+</script>
+
+<button onclick="deleteSelected()" class="btn delete">Delete Selected Task</button>
+<br><br>
+
+</body>
+</html>

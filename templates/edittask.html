@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+  <title>Edit Task</title>
+
+  <style>
+    form {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+
+    .btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+{% include 'navbar.html' %}
+  <br><br><br>
+  <div class="container">
+    <h1>Edit Task</h1>
+
+    <form>
+      <!-- Task Name -->
+      <label for="name">Task Name</label>
+      <input type="text" id="name" name="name" required>
+
+      <!-- Description -->
+      <label for="description">Description</label>
+      <textarea id="description" name="description"></textarea>
+
+      <!-- Urgency -->
+      <label for="urgency">Urgency</label>
+      <select id="urgency" name="urgency">
+        <option value="low">None</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <!-- Due Date -->
+      <label for="due">Due Date</label>
+      <input type="date" id="due" name="due">
+
+      <!-- Estimated Time -->
+      <label for="time">Estimated Time (hours)</label>
+      <input type="number" id="time" name="time" min="0" step="0.25">
+
+      <!-- Submit -->
+      <a href="/tasks" class="btn">Save Changes</a>
+    </form>
+  </div>
+
+</body>
+</html>

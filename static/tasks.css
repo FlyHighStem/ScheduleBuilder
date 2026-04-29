@@ -1,0 +1,27 @@
+    .add {
+      background-color: #2eca72;
+    }
+    .edit {
+      background-color: #faaa12;
+    }
+    .delete {
+      background-color: #e74a3c;
+    }
+    .clear {
+      background-color: #4f46e5;
+    }
+    .add:hover {
+    background-color: #2aca71;
+    opacity: 0.85;
+    }
+    .edit:hover {
+    background-color: #f39c12;
+    opacity: 0.85;
+    }
+    .delete:hover {
+    background-color: #e73a3a;
+    opacity: 0.85;
+    }
+    .clear:hover {
+      background-color: #4b26e5;
+    }
