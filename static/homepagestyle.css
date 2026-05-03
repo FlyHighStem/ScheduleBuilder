@@ -1,52 +1,49 @@
+/* --- Base Layout --- */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 .maincontent {
     display: flex;
     min-height: 100vh;
-    padding-top: 85px;
+    padding-top: 85px; 
     max-width: 1200px;
-    margin: 250 auto;
+    margin: 0 auto;
+    align-items: center; 
 }
 
+/*  Left Side  */
 .leftside {
-    width: 65%;
+    width: 50%; /* Clean 50/50 split */
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    padding: 50px;
-    background-color: #EDE8D0;
+    padding: 40px 60px;
 }
 
-.leftside img {
-    width: 100%;
-    max-width: 650px;
-    height: auto;
-    border-radius: 22px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-    object-fit: cover;
+.hero-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 4.5rem;
+    color: #c48afb; 
+    margin-bottom: 16px;
+    margin-top: 0;
+    line-height: 1.1;
 }
 
-.leftside::before {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 650px;
-    min-height: 420px;
-    border: 2px dashed #777;
-    border-radius: 22px;
-    color: #555;
+.hero-text {
     font-size: 1.2rem;
-    text-align: center;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.35);
+    color: #a0a0a0; 
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0;
 }
 
-.leftside:has(img)::before {
-    display: none;
-}
-
+/* Right Side (Login Form) */
 .rightside {
-    width: 35%;
-    background-color:  #EDE8D0;
+    width: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -55,58 +52,117 @@
 
 .logincontent {
     width: 100%;
-    max-width: 430px;
-    background-color: white;
-    padding: 36px 32px;
-    border-radius: 24px;
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
+    max-width: 400px;
+    background-color: #1e1e1e; 
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
 }
 
 .instructions {
-    font-size: 30px;
-    font-weight: bold;
-    line-height: 1.5;
-    margin-bottom: 15px;
-    text-align: left;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #ffffff;
 }
 
-.errormessage {
-    display: none;
-    color: #c62828;
-    background-color: #ffe5e5;
-    border: 1px solid #f3b2b2;
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 18px;
-    font-size: 0.95rem;
-}
-
+/* --- Form Elements --- */
 form {
     display: flex;
     flex-direction: column;
 }
 
 label {
-    margin-top: 14px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #a0a0a0;
 }
 
 input {
-    margin-bottom: 6px;
+    background-color: #2d2d2d;
+    border: 1px solid transparent;
+    color: #ffffff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+input:focus {
+    border-color: #c48afb;
 }
 
 .forgotpass {
     align-self: flex-end;
-    margin-top: 8px;
-    margin-bottom: 18px;
+    margin-top: -4px;
+    margin-bottom: 24px;
     text-decoration: none;
-    color: blue;
+    color: #c48afb;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
 }
 
-.btn + .btn {
-    margin-top: 12px;
-}
-
-.forgotpass:hover{
+.forgotpass:hover {
+    color: #b070ef;
     text-decoration: underline;
-    color: #0b036d
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: #c48afb;
+    color: #121212;
+    border-radius: 8px;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border: none;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #b070ef;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #c48afb;
+    border: 2px solid #c48afb;
+    border-radius: 8px;
+    padding: 12px; /* Slightly less padding to account for the border width */
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btn-outline:hover {
+    background-color: rgba(196, 138, 251, 0.1);
+    transform: translateY(-2px);
+}
+
+/* --- Error Message Styling --- */
+.errormessage {
+    display: none; 
+    color: #ff5630; 
+    background-color: rgba(255, 86, 48, 0.1);
+    border: 1px solid #ff5630;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.4;
 }
