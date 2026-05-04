@@ -1,0 +1,168 @@
+/* --- Base Layout --- */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.maincontent {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 85px; 
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: center; 
+}
+
+/*  Left Side  */
+.leftside {
+    width: 50%; /* Clean 50/50 split */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 60px;
+}
+
+.hero-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 4.5rem;
+    color: #c48afb; 
+    margin-bottom: 16px;
+    margin-top: 0;
+    line-height: 1.1;
+}
+
+.hero-text {
+    font-size: 1.2rem;
+    color: #a0a0a0; 
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0;
+}
+
+/* Right Side (Login Form) */
+.rightside {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.logincontent {
+    width: 100%;
+    max-width: 400px;
+    background-color: #1e1e1e; 
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.instructions {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #ffffff;
+}
+
+/* --- Form Elements --- */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #a0a0a0;
+}
+
+input {
+    background-color: #2d2d2d;
+    border: 1px solid transparent;
+    color: #ffffff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+input:focus {
+    border-color: #c48afb;
+}
+
+.forgotpass {
+    align-self: flex-end;
+    margin-top: -4px;
+    margin-bottom: 24px;
+    text-decoration: none;
+    color: #c48afb;
+    font-size: 0.85rem;
+    transition: color 0.2s ease;
+}
+
+.forgotpass:hover {
+    color: #b070ef;
+    text-decoration: underline;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: #c48afb;
+    color: #121212;
+    border-radius: 8px;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border: none;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #b070ef;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #c48afb;
+    border: 2px solid #c48afb;
+    border-radius: 8px;
+    padding: 12px; /* Slightly less padding to account for the border width */
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btn-outline:hover {
+    background-color: rgba(196, 138, 251, 0.1);
+    transform: translateY(-2px);
+}
+
+/* --- Error Message Styling --- */
+.errormessage {
+    display: none; 
+    color: #ff5630; 
+    background-color: rgba(255, 86, 48, 0.1);
+    border: 1px solid #ff5630;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.4;
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/calendar.css') }}">
+  <title>Weekly Calendar</title>
+</head>
+
+<body>
+{% include 'navbar.html' %}
+
+<div class="container">
+  <h1>Weekly Calendar (24 Hours)</h1>
+
+  <div class="calendar" id="calendar"></div>
+</div>
+
+<script>
+  const calendar = document.getElementById("calendar");
+
+  const days = ["Time","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+  // HEADER ROW
+  days.forEach(day => {
+    const div = document.createElement("div");
+    div.className = "cell header";
+    div.textContent = day;
+    calendar.appendChild(div);
+  });
+
+  // TIME FORMATTER (12-hour format)
+  function formatHour(hour) {
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    return h + " " + suffix;
+  }
+
+  // GENERATE 24 HOURS
+  for (let hour = 0; hour < 24; hour++) {
+
+    // Time column
+    const timeCell = document.createElement("div");
+    timeCell.className = "cell time";
+    timeCell.textContent = formatHour(hour);
+    calendar.appendChild(timeCell);
+
+    // 7 days
+    for (let d = 0; d < 7; d++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      // SAMPLE EVENTS (so it’s not empty)
+      if (hour === 9 && d === 2) {
+        cell.innerHTML = '<div class="event">Meeting</div>';
+      }
+      if (hour === 7 && d === 1) {
+        cell.innerHTML = '<div class="event">School</div>';
+      }
+      if (hour === 18 && d === 4) {
+        cell.innerHTML = '<div class="event">Gym</div>';
+      }
+
+      calendar.appendChild(cell);
+    }
+  }
+</script>
+
+</body>
+</html>

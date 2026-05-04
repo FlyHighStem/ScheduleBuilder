@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Schedule Builder</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Navbar container */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #c48afb;
+      padding: 10px 20px;
+      color: #121212; 
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    /* Brand */
+    .brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: #121212; /* Changed text to dark grey */
+      text-decoration: none;
+      font-size: 1rem;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* Dropdown */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown button {
+      background: none;
+      border: none;
+      color: #121212; /* Changed text to dark grey */
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      color: black;
+      min-width: 150px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: black;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <!-- Brand -->
+    <div class="brand">Schedule Builder</div>
+
+    <!-- Links -->
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/tasks">Tools</a>
+      <a href="/calendar">Calendar</a>
+
+      <!-- User Dropdown -->
+      <div class="dropdown">
+        <button>User ▾</button>
+        <div class="dropdown-content">
+          <a href="/profile">Profile</a>
+          <a href="/settings">Settings</a>
+          <a href="#">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+</body>
+</html>
