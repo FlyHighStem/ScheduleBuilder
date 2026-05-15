@@ -23,11 +23,11 @@
             <div class="logincontent">
                 <p class="instructions">Sign In</p>
                 
-                <p class="errormessage">
+                <p class="errormessage" id="loginError">
                     The email and/or password are not correct. Please try again!
                 </p>
         
-                <form id="loginForm" action="/login" method="POST">
+                <form id="loginForm">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="Enter your email" required />
                     
@@ -43,6 +43,25 @@
         </section>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const loginError = document.getElementById("loginError");
+
+        loginForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const users = getUsers();
+            const email = loginForm.email.value.trim();
+            const password = loginForm.password.value;
+            const user = users[email];
+
+            if (!user || user.password !== password) {
+                loginError.style.display = "block";
+                return;
+            }
+
+            localStorage.setItem(`${STORAGE_PREFIX}.currentUser`, email);
+            window.location.href = "/dashboard";
+        });
+    </script>
 </body>
 </html>

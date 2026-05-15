@@ -19,6 +19,15 @@ h1 {
     letter-spacing: -0.5px;
 }
 
+.task-page {
+    width: 100%;
+    max-width: 880px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
 /* --- Container & Button Layout --- */
 .btn-container {
     display: flex;
@@ -27,6 +36,14 @@ h1 {
     width: 100%;
     max-width: 400px;
     padding: 0 20px;
+}
+
+@media (min-width: 760px) {
+    .btn-container {
+        max-width: 760px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 .btn {
@@ -77,4 +94,53 @@ h1 {
 .clear:hover {
     background-color: #b070ef;
     transform: translateY(-2px); 
+}
+
+.task-list {
+    width: min(100% - 40px, 760px);
+    display: grid;
+    gap: 12px;
+}
+
+.task-card {
+    width: 100%;
+    border: 1px solid #333;
+    border-radius: 20px;
+    background: #1e1e1e;
+    color: #ffffff;
+    padding: 18px;
+    text-align: left;
+    cursor: pointer;
+    display: grid;
+    gap: 7px;
+    transition: 0.2s ease;
+}
+
+.task-card:hover,
+.task-card.is-selected {
+    transform: translateY(-2px);
+    border-color: #c48afb;
+    box-shadow: 0 12px 28px rgba(196, 138, 251, 0.12);
+}
+
+.task-name {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.task-meta {
+    color: #c48afb;
+    text-transform: capitalize;
+    font-weight: 700;
+}
+
+.task-description {
+    color: #bdbdbd;
+    line-height: 1.5;
+}
+
+.empty-state {
+    color: #bdbdbd;
+    text-align: center;
 }

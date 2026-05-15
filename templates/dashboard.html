@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Schedule Builder</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+</head>
+
+<body class="dashboard-body">
+
+  <header class="dashboard-topbar">
+    <div class="topbar-left">
+      <h2 class="dashboard-logo">ScheduleBuilder</h2>
+    </div>
+
+    <div class="user-menu">
+      <button class="user-menu-btn" data-user-menu-button onclick="toggleSidebar(event)">
+        {{ user.name }} ☰
+      </button>
+    </div>
+  </header>
+
+  <aside class="dashboard-sidebar" id="dashboardSidebar">
+    <button class="close-sidebar" onclick="toggleSidebar(event)">×</button>
+
+    <h2>Menu</h2>
+
+    <nav class="dashboard-menu">
+      <a href="/dashboard">Dashboard</a>
+      <button type="button" data-open-dialog="profileDialog">Profile</button>
+      <button type="button" data-open-dialog="settingsDialog">Settings</button>
+      <button type="button" data-logout>Logout</button>
+    </nav>
+  </aside>
+
+  <main class="dashboard-content full-width">
+
+    <section class="dashboard-main-grid">
+
+      <section class="dashboard-week-card large-calendar">
+        <div class="week-card-header">
+          <div>
+            <p class="small-label">This Week</p>
+            <h2>Schedule Preview</h2>
+          </div>
+
+          <a href="/calendar">Open Full Calendar →</a>
+        </div>
+
+        <div class="mini-calendar-scroll">
+          <div class="mini-calendar" id="miniCalendar"></div>
+        </div>
+      </section>
+
+      <section class="side-cards">
+
+        <button class="dashboard-card small-card add-card add-task-trigger"
+        onclick="openAddTaskModal()">
+
+  <h3>Add Task</h3>
+  <p>Create a new assignment, reminder, or event.</p>
+
+</button>
+
+        <section class="ai-panel compact-ai">
+          <h2>AI Assistant</h2>
+          <p>Ask for help planning your day.</p>
+
+          <div id="aiChat" class="ai-chat" aria-live="polite">
+            <div class="chat-message assistant">
+              <div class="chat-bubble">Tell me what you need to plan, and I’ll help shape your schedule.</div>
+            </div>
+          </div>
+
+          <form id="aiForm" class="ai-input-row">
+            <textarea id="aiInput" placeholder="Example: Help me plan my study schedule today."></textarea>
+            <button type="submit" class="ai-btn">Send</button>
+          </form>
+        </section>
+
+      </section>
+
+    </section>
+
+  </main>
+
+  <div class="modal-overlay" id="taskModal">
+    <div class="task-modal">
+      <button class="modal-close" onclick="closeTaskModal()">×</button>
+
+      <h2>Edit Task</h2>
+      <input type="hidden" id="modalTaskId">
+
+      <div class="form-grid">
+        <div class="form-field full-width">
+          <label for="modalTaskName">Task Name</label>
+          <input type="text" id="modalTaskName">
+        </div>
+
+      <div class="form-field full-width">
+          <label for="modalTaskDescription">Description</label>
+          <input type="text" id="modalTaskDescription">
+        </div>
+
+      <div class="form-field">
+          <label for="modalTaskUrgency">Urgency</label>
+          <p class="field-help">How soon it needs attention.</p>
+          <select id="modalTaskUrgency">
+        <option value="none">None</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="modalTaskImportance">Importance</label>
+      <p class="field-help">How much it matters. High tasks are AI-protected.</p>
+          <select id="modalTaskImportance">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="modalTaskCategory">Category</label>
+      <select id="modalTaskCategory">
+        <option value="school">School</option>
+        <option value="work">Work</option>
+        <option value="personal">Personal</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="modalTaskDate">Schedule Date</label>
+      <input type="date" id="modalTaskDate">
+        </div>
+
+        <div class="form-field">
+          <label for="modalTaskStartHour">Start Time</label>
+      <select id="modalTaskStartHour"></select>
+        </div>
+
+        <div class="form-field">
+          <label for="modalTaskEndHour">End Time</label>
+      <select id="modalTaskEndHour"></select>
+        </div>
+
+        <fieldset class="repeat-field full-width">
+          <legend>Repeat Days</legend>
+          <p class="field-help">Use this for classes, practices, study blocks, or weekly routines.</p>
+          <div class="repeat-options" data-repeat-group>
+            <label><input type="checkbox" name="modalRepeatDays" value="mon"> Mon</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="tue"> Tue</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="wed"> Wed</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="thu"> Thu</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="fri"> Fri</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="sat"> Sat</label>
+            <label><input type="checkbox" name="modalRepeatDays" value="sun"> Sun</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="modal-actions">
+        <button class="save-btn" id="modalSaveButton" onclick="saveTaskChanges()">Save Changes</button>
+        <button class="delete-btn" onclick="deleteTask()">Delete Task</button>
+      </div>
+    </div>
+  </div>
+
+  <dialog class="modal" id="profileDialog">
+    <form class="modal-card" id="profileForm">
+      <div class="modal-header">
+        <h2>Profile</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close">x</button>
+      </div>
+
+      <label for="profileName">Full Name</label>
+      <input type="text" id="profileName" name="fullname" required>
+
+      <label for="profileEmail">Email</label>
+      <input type="email" id="profileEmail" name="email" required>
+
+      <button type="submit" class="modal-submit">Save Profile</button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="settingsDialog">
+    <form class="modal-card" id="settingsForm">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close">x</button>
+      </div>
+
+      <label for="theme">Theme</label>
+      <select id="theme" name="theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+
+      <label class="checkbox-row">
+        <input type="checkbox" name="reminders">
+        Save reminder preference
+      </label>
+
+      <button type="submit" class="modal-submit">Save Settings</button>
+    </form>
+  </dialog>
+
+  <script src="{{ url_for('static', path='/app.js') }}"></script>
+  <script>
+    const sidebar = document.getElementById("dashboardSidebar");
+    const miniCalendar = document.getElementById("miniCalendar");
+    const miniCalendarScroll = document.querySelector(".mini-calendar-scroll");
+    const taskModal = document.getElementById("taskModal");
+    const modalTitle = taskModal.querySelector("h2");
+    const modalTaskId = document.getElementById("modalTaskId");
+    const modalTaskName = document.getElementById("modalTaskName");
+    const modalTaskDescription = document.getElementById("modalTaskDescription");
+    const modalTaskUrgency = document.getElementById("modalTaskUrgency");
+    const modalTaskImportance = document.getElementById("modalTaskImportance");
+    const modalTaskCategory = document.getElementById("modalTaskCategory");
+    const modalTaskDate = document.getElementById("modalTaskDate");
+    const modalTaskStartHour = document.getElementById("modalTaskStartHour");
+    const modalTaskEndHour = document.getElementById("modalTaskEndHour");
+    const modalSaveButton = document.getElementById("modalSaveButton");
+
+    let selectedTaskId = null;
+
+    function toggleSidebar(event) {
+      if (event) {
+        event.stopPropagation();
+      }
+
+      sidebar.classList.toggle("open");
+    }
+
+    document.addEventListener("click", function(event) {
+      const clickedInsideSidebar = sidebar.contains(event.target);
+      const clickedMenuButton = event.target.closest(".user-menu-btn");
+
+      if (
+        sidebar.classList.contains("open") &&
+        !clickedInsideSidebar &&
+        !clickedMenuButton
+      ) {
+        sidebar.classList.remove("open");
+      }
+    });
+
+    function addChatMessage(sender, text) {
+      const chat = document.getElementById("aiChat");
+      const message = document.createElement("div");
+      message.className = `chat-message ${sender}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble";
+      bubble.textContent = text;
+
+      message.appendChild(bubble);
+      chat.appendChild(message);
+      chat.scrollTop = chat.scrollHeight;
+
+      return bubble;
+    }
+
+    function applyAiActions(actions = []) {
+      let changedTasks = 0;
+      let blockedTasks = 0;
+
+      actions.forEach((action) => {
+        if (action.type === "create_task" && action.task?.name) {
+          createTask(action.task);
+          changedTasks++;
+        }
+
+        if (action.type === "update_task" && action.task_id && action.updates) {
+          const task = getTasks().find((savedTask) => savedTask.id === action.task_id);
+          if (task?.importance === "high" && !action.user_permission_confirmed) {
+            blockedTasks++;
+            return;
+          }
+          updateTask(action.task_id, action.updates);
+          changedTasks++;
+        }
+
+        if (action.type === "delete_task" && action.task_id) {
+          const task = getTasks().find((savedTask) => savedTask.id === action.task_id);
+          if (task?.importance === "high" && !action.user_permission_confirmed) {
+            blockedTasks++;
+            return;
+          }
+          deleteSavedTask(action.task_id);
+          changedTasks++;
+        }
+      });
+
+      if (changedTasks > 0) {
+        renderMiniCalendar();
+      }
+
+      return { changedTasks, blockedTasks };
+    }
+
+    async function askAI(event) {
+      if (event) {
+        event.preventDefault();
+      }
+
+      const input = document.getElementById("aiInput");
+      const userMessage = input.value.trim();
+
+      if (!userMessage) {
+        input.focus();
+        return;
+      }
+
+      addChatMessage("user", userMessage);
+      input.value = "";
+      const thinkingBubble = addChatMessage("assistant", "Thinking...");
+
+      try {
+        const response = await fetch("/api/ai-schedule", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            tasks: getTasks()
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          thinkingBubble.textContent = data.detail || "The AI request failed.";
+          return;
+        }
+        const { changedTasks, blockedTasks } = applyAiActions(data.actions);
+        const taskNote = changedTasks ? `\n\nUpdated ${changedTasks} task${changedTasks === 1 ? "" : "s"}.` : "";
+        const blockedNote = blockedTasks ? `\n\nI did not change ${blockedTasks} high-importance task${blockedTasks === 1 ? "" : "s"} because I need your permission first.` : "";
+        thinkingBubble.textContent = `${data.reply || "No response received."}${taskNote}${blockedNote}`;
+      } catch (error) {
+        thinkingBubble.textContent = "Something went wrong connecting to the AI.";
+        console.error(error);
+      }
+    }
+
+    document.getElementById("aiForm").addEventListener("submit", askAI);
+
+    function formatHour(hour) {
+      const suffix = hour >= 12 ? "PM" : "AM";
+      const h = hour % 12 === 0 ? 12 : hour % 12;
+      return `${h} ${suffix}`;
+    }
+
+    function fillHourDropdown() {
+      modalTaskStartHour.innerHTML = "";
+      modalTaskEndHour.innerHTML = "";
+
+      for (let hour = 0; hour <= 22; hour++) {
+        const option = document.createElement("option");
+        option.value = hour;
+        option.textContent = formatHour(hour);
+        modalTaskStartHour.appendChild(option);
+      }
+
+      for (let hour = 1; hour <= 24; hour++) {
+        const option = document.createElement("option");
+        option.value = hour;
+        option.textContent = formatHour(hour);
+        modalTaskEndHour.appendChild(option);
+      }
+    }
+
+    function renderMiniCalendar() {
+      const days = getNextSevenDays();
+      const currentHour = new Date().getHours();
+      const currentMinute = new Date().getMinutes();
+
+      miniCalendar.innerHTML = "";
+
+      const headerBlank = document.createElement("div");
+      headerBlank.className = "mini-cell mini-header mini-time-header";
+      miniCalendar.appendChild(headerBlank);
+
+      days.forEach((day, index) => {
+        const dayHeader = document.createElement("div");
+        dayHeader.className = "mini-cell mini-header";
+        dayHeader.innerHTML = `
+          <strong>${index === 0 ? "Today" : day.weekday}</strong>
+          <span>${day.date}</span>
+        `;
+        miniCalendar.appendChild(dayHeader);
+      });
+
+      for (let hour = 0; hour < 24; hour++) {
+        const timeCell = document.createElement("div");
+        timeCell.className = "mini-cell mini-time";
+        timeCell.textContent = formatHour(hour);
+        miniCalendar.appendChild(timeCell);
+
+        for (let day = 0; day < 7; day++) {
+          const cell = document.createElement("div");
+          cell.className = "mini-cell mini-slot";
+
+          const event = getTasks().find(e => {
+            const task = normalizeTaskTiming(e);
+            return Number(task.dayOffset || 0) === day && hour >= task.startHour && hour < task.endHour;
+          });
+
+          if (event) {
+            const task = normalizeTaskTiming(event);
+            const eventDiv = document.createElement("div");
+            eventDiv.className = "mini-event";
+            eventDiv.classList.add(event.category || "school");
+            eventDiv.textContent = hour === task.startHour
+              ? `${event.name || event.title} (${getTaskTimeLabel(task)})`
+              : `${event.name || event.title} continued`;
+
+            eventDiv.onclick = function(e) {
+              e.stopPropagation();
+              openTaskModal(event.id);
+            };
+
+            cell.appendChild(eventDiv);
+          }
+
+          miniCalendar.appendChild(cell);
+        }
+      }
+
+      const line = document.createElement("div");
+      line.className = "current-time-line";
+
+      const rowHeight = 50;
+      const headerHeight = 54;
+
+      const timePosition =
+        headerHeight + (currentHour + currentMinute / 60) * rowHeight;
+
+      line.style.top = `${timePosition}px`;
+      miniCalendar.appendChild(line);
+      centerCalendarOnCurrentTime(timePosition);
+    }
+
+    function centerCalendarOnCurrentTime(timePosition) {
+      if (!miniCalendarScroll) {
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        const centerOffset = miniCalendarScroll.clientHeight / 2;
+        miniCalendarScroll.scrollTop = Math.max(0, timePosition - centerOffset);
+      });
+    }
+
+    function openAddTaskModal() {
+      selectedTaskId = null;
+      modalTitle.textContent = "Add Task";
+      modalSaveButton.textContent = "Create Task";
+      modalTaskId.value = "";
+      modalTaskName.value = "";
+      modalTaskDescription.value = "";
+      modalTaskUrgency.value = "none";
+      modalTaskImportance.value = "medium";
+      modalTaskCategory.value = "school";
+      modalTaskDate.value = getTodayValue();
+      modalTaskStartHour.value = "9";
+      modalTaskEndHour.value = "10";
+      document.querySelectorAll("input[name=\"modalRepeatDays\"]").forEach((input) => input.checked = false);
+      taskModal.classList.add("show");
+    }
+
+    function openTaskModal(taskId) {
+      const task = getTasks().find(event => event.id === taskId);
+      if (!task) return;
+
+      selectedTaskId = task.id;
+      modalTitle.textContent = "Edit Task";
+      modalSaveButton.textContent = "Save Changes";
+      modalTaskId.value = task.id;
+      modalTaskName.value = task.name || task.title || "";
+      modalTaskDescription.value = task.description || "";
+      modalTaskUrgency.value = task.urgency || "none";
+      modalTaskImportance.value = task.importance || "medium";
+      modalTaskCategory.value = task.category || "school";
+      modalTaskDate.value = task.due || getTodayValue();
+      modalTaskStartHour.value = normalizeTaskTiming(task).startHour;
+      modalTaskEndHour.value = normalizeTaskTiming(task).endHour;
+      document.querySelectorAll("input[name=\"modalRepeatDays\"]").forEach((input) => {
+        input.checked = (task.repeatDays || []).includes(input.value);
+      });
+
+      taskModal.classList.add("show");
+    }
+
+    function closeTaskModal() {
+      taskModal.classList.remove("show");
+      selectedTaskId = null;
+    }
+
+    function saveTaskChanges() {
+      const taskName = modalTaskName.value.trim();
+      if (!taskName) {
+        return;
+      }
+
+      const taskData = {
+        name: taskName,
+        title: taskName,
+        description: modalTaskDescription.value.trim(),
+        category: modalTaskCategory.value,
+        urgency: modalTaskUrgency.value,
+        importance: modalTaskImportance.value,
+        due: modalTaskDate.value,
+        dayOffset: getDayOffsetFromDate(modalTaskDate.value),
+        startHour: Number(modalTaskStartHour.value),
+        endHour: Number(modalTaskEndHour.value),
+        repeatDays: Array.from(document.querySelectorAll("input[name=\"modalRepeatDays\"]:checked")).map((input) => input.value)
+      };
+
+      if (selectedTaskId) {
+        updateTask(selectedTaskId, taskData);
+      } else {
+        createTask(taskData);
+      }
+
+      closeTaskModal();
+      renderMiniCalendar();
+    }
+
+    function deleteTask() {
+      if (selectedTaskId) {
+        deleteSavedTask(selectedTaskId);
+      }
+
+      closeTaskModal();
+      renderMiniCalendar();
+    }
+
+    taskModal.addEventListener("click", function(event) {
+      if (event.target === taskModal) {
+        closeTaskModal();
+      }
+    });
+
+    fillHourDropdown();
+    document.addEventListener("tasksSynced", renderMiniCalendar);
+    renderMiniCalendar();
+    setInterval(renderMiniCalendar, 60000);
+  </script>
+
+</body>
+</html>

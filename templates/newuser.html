@@ -23,7 +23,9 @@
         <h1>Create Account</h1>
         <p class="subtitle">Start building your schedule with help!</p>
 
-        <form class="create-form">
+        <form class="create-form" id="createAccountForm">
+          <p class="notice" id="createNotice" hidden></p>
+
           <div class="input-group">
             <label for="fullname">Full Name</label>
             <input type="text" id="fullname" name="fullname" placeholder="Enter your full name">
@@ -49,11 +51,36 @@
 
         <p class="signin-text">
           Already have an account?
-          <a href="homepage.html" class="link">Sign In</a>
+          <a href="/" class="link">Sign In</a>
         </p>
       </div>
     </section>
   </main>
 
+  <script>
+    const createAccountForm = document.getElementById("createAccountForm");
+    const createNotice = document.getElementById("createNotice");
+
+    createAccountForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const fullname = createAccountForm.fullname.value.trim();
+      const email = createAccountForm.email.value.trim();
+      const password = createAccountForm.password.value;
+      const confirmPassword = createAccountForm["confirm-password"].value;
+
+      if (!fullname || !email || !password) {
+        showMessage(createNotice, "Fill out your name, email, and password.", true);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage(createNotice, "Passwords do not match.", true);
+        return;
+      }
+
+      saveUser({ fullname, email, password, theme: "dark", reminders: true });
+      window.location.href = "/dashboard";
+    });
+  </script>
 </body>
 </html>

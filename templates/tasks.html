@@ -2,21 +2,290 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tasks</title>
   <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}">
 </head>
 <body>
 {% include 'navbar.html' %}
-  
-  <h1>Task Manager</h1>
 
-  <div class="btn-container">
-    <a href="/add" class="btn add">Add Task</a><br>
-    <a href="/edit" class="btn edit">Edit Task</a><br>
-    <a href="/delete" class="btn delete">Delete Task</a><br>
-    <button class="btn clear">Clear All Tasks</button>
-  </div>
+  <main class="task-page">
+    <h1>Task Manager</h1>
 
+    <div class="btn-container">
+      <button type="button" class="btn add" data-open-task-modal="add">Add Task</button>
+      <button type="button" class="btn edit" data-open-task-modal="edit">Edit Selected Task</button>
+      <button type="button" class="btn delete" data-open-task-modal="delete">Delete Selected Task</button>
+      <button type="button" class="btn clear" id="clearTasksButton">Clear All Tasks</button>
+    </div>
+
+    <p class="notice" id="taskNotice" hidden></p>
+    <section class="task-list" id="taskList"></section>
+  </main>
+
+  <dialog class="modal" id="taskDialog">
+    <form class="modal-card" id="taskForm">
+      <div class="modal-header">
+        <h2 id="taskDialogTitle">Add Task</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close">x</button>
+      </div>
+
+      <input type="hidden" id="taskId" name="taskId">
+
+      <div class="form-grid">
+        <div class="form-field full-width">
+          <label for="name">Task Name</label>
+          <input type="text" id="name" name="name" required placeholder="e.g., Study for Calculus">
+        </div>
+
+      <div class="form-field full-width">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Class, chapter, notes, or what you need to finish..."></textarea>
+        </div>
+
+      <div class="form-field">
+          <label for="urgency">Urgency</label>
+          <p class="field-help">How soon it needs attention.</p>
+          <select id="urgency" name="urgency">
+        <option value="none">None</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="importance">Importance</label>
+      <p class="field-help">How much it matters. High tasks are AI-protected.</p>
+          <select id="importance" name="importance">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="category">Category</label>
+      <select id="category" name="category">
+        <option value="school">School</option>
+        <option value="work">Work</option>
+        <option value="personal">Personal</option>
+      </select>
+        </div>
+
+        <div class="form-field">
+          <label for="due">Schedule Date</label>
+      <input type="date" id="due" name="due">
+        </div>
+
+        <div class="form-field">
+          <label for="startHour">Start Time</label>
+      <select id="startHour" name="startHour"></select>
+        </div>
+
+        <div class="form-field">
+          <label for="endHour">End Time</label>
+      <select id="endHour" name="endHour"></select>
+        </div>
+
+        <fieldset class="repeat-field full-width">
+          <legend>Repeat Days</legend>
+          <p class="field-help">Use this for classes, practices, study blocks, or weekly routines.</p>
+          <div class="repeat-options" data-repeat-group>
+            <label><input type="checkbox" name="repeatDays" value="mon"> Mon</label>
+            <label><input type="checkbox" name="repeatDays" value="tue"> Tue</label>
+            <label><input type="checkbox" name="repeatDays" value="wed"> Wed</label>
+            <label><input type="checkbox" name="repeatDays" value="thu"> Thu</label>
+            <label><input type="checkbox" name="repeatDays" value="fri"> Fri</label>
+            <label><input type="checkbox" name="repeatDays" value="sat"> Sat</label>
+            <label><input type="checkbox" name="repeatDays" value="sun"> Sun</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button type="submit" class="modal-submit" id="taskSubmitButton">Create Task</button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="deleteDialog">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Delete Task</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close">x</button>
+      </div>
+      <p id="deleteMessage">Delete this task?</p>
+      <button type="button" class="delete-btn" id="confirmDeleteButton">Delete Task</button>
+    </div>
+  </dialog>
+
+  <script>
+    const taskList = document.getElementById("taskList");
+    const taskNotice = document.getElementById("taskNotice");
+    const taskDialog = document.getElementById("taskDialog");
+    const deleteDialog = document.getElementById("deleteDialog");
+    const taskForm = document.getElementById("taskForm");
+    const taskDialogTitle = document.getElementById("taskDialogTitle");
+    const taskSubmitButton = document.getElementById("taskSubmitButton");
+    const deleteMessage = document.getElementById("deleteMessage");
+    let selectedTaskId = null;
+    let taskMode = "add";
+
+    function selectedTask() {
+      return getTasks().find((task) => task.id === selectedTaskId);
+    }
+
+    function renderTasks() {
+      const tasks = getTasks();
+      taskList.innerHTML = "";
+
+      if (!tasks.length) {
+        taskList.innerHTML = '<p class="empty-state">No saved tasks yet. Add one to start building your schedule.</p>';
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "task-card";
+        if (task.id === selectedTaskId) card.classList.add("is-selected");
+        card.innerHTML = `
+          <span class="task-name">${task.name}</span>
+          <span class="task-meta">${task.category || "school"} • ${task.urgency} urgency • ${task.importance || "medium"} importance • ${getTaskTimeLabel(task)}${task.due ? " • Due " + task.due : ""}</span>
+          ${task.description ? `<span class="task-description">${task.description}</span>` : ""}
+        `;
+        card.addEventListener("click", () => {
+          selectedTaskId = selectedTaskId === task.id ? null : task.id;
+          renderTasks();
+        });
+        taskList.appendChild(card);
+      });
+    }
+
+    function fillTaskForm(task = {}) {
+      taskForm.taskId.value = task.id || "";
+      taskForm.name.value = task.name || "";
+      taskForm.description.value = task.description || "";
+      taskForm.urgency.value = task.urgency || "none";
+      taskForm.importance.value = task.importance || "medium";
+      taskForm.category.value = task.category || "school";
+      taskForm.due.value = task.due || getTodayValue();
+      taskForm.startHour.value = normalizeTaskTiming(task).startHour;
+      taskForm.endHour.value = normalizeTaskTiming(task).endHour;
+      taskForm.querySelectorAll("input[name=\"repeatDays\"]").forEach((input) => {
+        input.checked = (task.repeatDays || []).includes(input.value);
+      });
+    }
+
+    function openTaskModal(mode) {
+      taskMode = mode;
+
+      if (mode === "add") {
+        taskDialogTitle.textContent = "Add Task";
+        taskSubmitButton.textContent = "Create Task";
+        fillTaskForm();
+        openDialog(taskDialog);
+        return;
+      }
+
+      const task = selectedTask();
+      if (!task) {
+        showMessage(taskNotice, "Select a task first.", true);
+        return;
+      }
+
+      if (mode === "edit") {
+        taskDialogTitle.textContent = "Edit Task";
+        taskSubmitButton.textContent = "Save Changes";
+        fillTaskForm(task);
+        openDialog(taskDialog);
+      }
+
+      if (mode === "delete") {
+        deleteMessage.textContent = `Delete "${task.name}"?`;
+        openDialog(deleteDialog);
+      }
+    }
+
+    document.querySelectorAll("[data-open-task-modal]").forEach((button) => {
+      button.addEventListener("click", () => openTaskModal(button.dataset.openTaskModal));
+    });
+
+    taskForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const taskData = {
+        name: taskForm.name.value.trim(),
+        description: taskForm.description.value.trim(),
+        category: taskForm.category.value,
+        urgency: taskForm.urgency.value,
+        importance: taskForm.importance.value,
+        due: taskForm.due.value,
+        dayOffset: getDayOffsetFromDate(taskForm.due.value),
+        startHour: Number(taskForm.startHour.value),
+        endHour: Number(taskForm.endHour.value),
+        repeatDays: Array.from(taskForm.querySelectorAll("input[name=\"repeatDays\"]:checked")).map((input) => input.value)
+      };
+
+      if (!taskData.name) {
+        showMessage(taskNotice, "Task name is required.", true);
+        return;
+      }
+
+      if (taskMode === "edit") {
+        updateTask(taskForm.taskId.value, taskData);
+        showMessage(taskNotice, "Task updated.");
+      } else {
+        const task = createTask(taskData);
+        selectedTaskId = task.id;
+        showMessage(taskNotice, "Task saved to this computer.");
+      }
+
+      closeDialog(taskDialog);
+      renderTasks();
+    });
+
+    document.getElementById("confirmDeleteButton").addEventListener("click", () => {
+      if (!selectedTaskId) return;
+      deleteSavedTask(selectedTaskId);
+      selectedTaskId = null;
+      closeDialog(deleteDialog);
+      showMessage(taskNotice, "Task deleted.");
+      renderTasks();
+    });
+
+    document.getElementById("clearTasksButton").addEventListener("click", () => {
+      if (!getTasks().length) {
+        showMessage(taskNotice, "There are no tasks to clear.", true);
+        return;
+      }
+      clearTasks();
+      selectedTaskId = null;
+      showMessage(taskNotice, "All tasks cleared.");
+      renderTasks();
+    });
+
+    function fillTaskTimeDropdowns() {
+      const startSelect = document.getElementById("startHour");
+      const endSelect = document.getElementById("endHour");
+
+      for (let hour = 6; hour <= 22; hour++) {
+        const startOption = document.createElement("option");
+        startOption.value = hour;
+        startOption.textContent = formatScheduleHour(hour);
+        startSelect.appendChild(startOption);
+      }
+
+      for (let hour = 7; hour <= 23; hour++) {
+        const endOption = document.createElement("option");
+        endOption.value = hour;
+        endOption.textContent = formatScheduleHour(hour);
+        endSelect.appendChild(endOption);
+      }
+    }
+
+    fillTaskTimeDropdowns();
+    document.addEventListener("tasksSynced", renderTasks);
+    renderTasks();
+  </script>
 </body>
 </html>
