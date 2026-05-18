@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard | Schedule Builder</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}?v=20260518-no-overlap">
 </head>
 
 <body class="dashboard-body">
@@ -69,7 +69,7 @@
 
           <div id="aiChat" class="ai-chat" aria-live="polite">
             <div class="chat-message assistant">
-              <div class="chat-bubble">Tell me what you need to plan, and I’ll help shape your schedule.</div>
+              <div class="chat-bubble ai-status-bubble" id="aiStatusBubble"></div>
             </div>
           </div>
 
@@ -209,7 +209,7 @@
     </form>
   </dialog>
 
-  <script src="{{ url_for('static', path='/app.js') }}"></script>
+  <script src="{{ url_for('static', path='/app.js') }}?v=20260518-no-overlap"></script>
   <script>
     const sidebar = document.getElementById("dashboardSidebar");
     const miniCalendar = document.getElementById("miniCalendar");
@@ -226,8 +226,10 @@
     const modalTaskStartHour = document.getElementById("modalTaskStartHour");
     const modalTaskEndHour = document.getElementById("modalTaskEndHour");
     const modalSaveButton = document.getElementById("modalSaveButton");
+    const aiStatusBubble = document.getElementById("aiStatusBubble");
 
     let selectedTaskId = null;
+    let pendingAiTask = null;
 
     function toggleSidebar(event) {
       if (event) {
@@ -266,12 +268,114 @@
       return bubble;
     }
 
+    function formatDateLong(date) {
+      return date.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function formatClock(date) {
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function durationLabel(milliseconds) {
+      const totalMinutes = Math.max(0, Math.round(milliseconds / 60000));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      if (hours && minutes) return `${hours} hr ${minutes} min`;
+      if (hours) return `${hours} hr`;
+      if (minutes) return `${minutes} min`;
+      return "now";
+    }
+
+    function taskDateTime(dateValue, hour) {
+      const date = dateFromValue(dateValue);
+      date.setHours(hour, 0, 0, 0);
+      return date;
+    }
+
+    function getNextScheduledOccurrence() {
+      const now = new Date();
+      const todayValue = getTodayValue();
+      const candidates = [];
+
+      getTasks().forEach((task) => {
+        if (!taskOccursOnDate(task, todayValue)) return;
+        const normalized = normalizeTaskTiming(task);
+        const startsAt = taskDateTime(todayValue, normalized.startHour);
+        const endsAt = taskDateTime(todayValue, normalized.endHour);
+        if (endsAt <= now) return;
+
+        candidates.push({
+          task,
+          startsAt,
+          endsAt,
+          dateValue: todayValue
+        });
+      });
+
+      return candidates.sort((a, b) => a.startsAt - b.startsAt)[0] || null;
+    }
+
+    function renderAiStatusBubble() {
+      if (!aiStatusBubble) return;
+
+      const user = getCurrentUser();
+      const now = new Date();
+      const next = getNextScheduledOccurrence();
+
+      let nextMarkup = `
+        <div class="ai-status-next">
+          <span class="ai-status-label">Next scheduled event</span>
+          <strong>No more events today</strong>
+          <span>Your remaining schedule is clear for today.</span>
+        </div>
+      `;
+
+      if (next) {
+        const hasStarted = next.startsAt <= now;
+        const untilText = hasStarted
+          ? `Happening now, ends in ${durationLabel(next.endsAt - now)}`
+          : `Starts in ${durationLabel(next.startsAt - now)}`;
+        nextMarkup = `
+          <div class="ai-status-next">
+            <span class="ai-status-label">Next scheduled event</span>
+            <strong>${next.task.name || next.task.title}</strong>
+            <span>${formatDateLong(next.startsAt)} · ${getTaskTimeLabel(next.task)} · ${untilText}</span>
+          </div>
+        `;
+      }
+
+      aiStatusBubble.innerHTML = `
+        <div class="ai-status-card">
+          <div class="ai-status-heading">
+            <strong>Hello, ${user.fullname || user.name || "Test User"}</strong>
+            <span>${formatClock(now)}</span>
+          </div>
+          ${nextMarkup}
+        </div>
+      `;
+    }
+
     function applyAiActions(actions = []) {
       let changedTasks = 0;
       let blockedTasks = 0;
+      let blockedReason = "";
 
       actions.forEach((action) => {
         if (action.type === "create_task" && action.task?.name) {
+          const conflict = findHighImportanceConflict(action.task);
+          if (conflict) {
+            blockedTasks++;
+            blockedReason = getHighImportanceConflictMessage(action.task, conflict);
+            return;
+          }
           createTask(action.task);
           changedTasks++;
         }
@@ -280,6 +384,14 @@
           const task = getTasks().find((savedTask) => savedTask.id === action.task_id);
           if (task?.importance === "high" && !action.user_permission_confirmed) {
             blockedTasks++;
+            blockedReason = `${task.name || task.title} is high importance, so I cannot change it without permission.`;
+            return;
+          }
+          const candidate = normalizeTaskTiming({ ...task, ...action.updates });
+          const conflict = findHighImportanceConflict(candidate, task.id);
+          if (conflict) {
+            blockedTasks++;
+            blockedReason = getHighImportanceConflictMessage(candidate, conflict);
             return;
           }
           updateTask(action.task_id, action.updates);
@@ -288,8 +400,9 @@
 
         if (action.type === "delete_task" && action.task_id) {
           const task = getTasks().find((savedTask) => savedTask.id === action.task_id);
-          if (task?.importance === "high" && !action.user_permission_confirmed) {
+          if (task?.importance === "high") {
             blockedTasks++;
+            blockedReason = `${task.name || task.title} is high importance, so I cannot delete it.`;
             return;
           }
           deleteSavedTask(action.task_id);
@@ -301,7 +414,62 @@
         renderMiniCalendar();
       }
 
-      return { changedTasks, blockedTasks };
+      return { changedTasks, blockedTasks, blockedReason };
+    }
+
+    function importanceFromNumber(value) {
+      const rating = Number(value);
+      if (rating <= 2) return "low";
+      if (rating <= 4) return "medium";
+      return "high";
+    }
+
+    async function savePendingAiTaskWithImportance(rating, bubble) {
+      const importance = importanceFromNumber(rating);
+      const task = {
+        ...pendingAiTask,
+        importance
+      };
+
+      const conflict = findHighImportanceConflict(task);
+      if (conflict) {
+        pendingAiTask = null;
+        bubble.textContent = getHighImportanceConflictMessage(task, conflict);
+        return false;
+      }
+
+      createTask(task);
+      await waitForTaskDatabaseWrites();
+      pendingAiTask = null;
+      renderMiniCalendar();
+      bubble.textContent = `Saved ${task.name} with importance ${rating}/5 (${importance}). Events cannot overlap.${importance === "high" ? " High-importance tasks also cannot be deleted." : ""}`;
+      return true;
+    }
+
+    async function finishPendingAiTask(userMessage, bubble) {
+      const ratingMatch = userMessage.match(/\b([1-5])\b/);
+      if (!pendingAiTask || !ratingMatch) {
+        return false;
+      }
+
+      return savePendingAiTaskWithImportance(Number(ratingMatch[1]), bubble);
+    }
+
+    function addImportanceButtons(bubble, task) {
+      const choices = document.createElement("div");
+      choices.className = "importance-choice-row";
+      choices.setAttribute("aria-label", "Choose importance from 1 to 5");
+
+      for (let rating = 1; rating <= 5; rating++) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "importance-choice";
+        button.textContent = rating;
+        button.addEventListener("click", () => savePendingAiTaskWithImportance(rating, bubble));
+        choices.appendChild(button);
+      }
+
+      bubble.appendChild(choices);
     }
 
     async function askAI(event) {
@@ -322,6 +490,10 @@
       const thinkingBubble = addChatMessage("assistant", "Thinking...");
 
       try {
+        if (await finishPendingAiTask(userMessage, thinkingBubble)) {
+          return;
+        }
+
         const response = await fetch("/api/ai-schedule", {
           method: "POST",
           headers: {
@@ -338,9 +510,14 @@
           thinkingBubble.textContent = data.detail || "The AI request failed.";
           return;
         }
-        const { changedTasks, blockedTasks } = applyAiActions(data.actions);
+        pendingAiTask = data.pending_task || null;
+        if (pendingAiTask) {
+          addImportanceButtons(thinkingBubble, pendingAiTask);
+        }
+        const { changedTasks, blockedTasks, blockedReason } = applyAiActions(data.actions);
+        await waitForTaskDatabaseWrites();
         const taskNote = changedTasks ? `\n\nUpdated ${changedTasks} task${changedTasks === 1 ? "" : "s"}.` : "";
-        const blockedNote = blockedTasks ? `\n\nI did not change ${blockedTasks} high-importance task${blockedTasks === 1 ? "" : "s"} because I need your permission first.` : "";
+        const blockedNote = blockedTasks ? `\n\n${blockedReason || "I did not make that change because a high-importance task is protected."}` : "";
         thinkingBubble.textContent = `${data.reply || "No response received."}${taskNote}${blockedNote}`;
       } catch (error) {
         thinkingBubble.textContent = "Something went wrong connecting to the AI.";
@@ -376,7 +553,8 @@
     }
 
     function renderMiniCalendar() {
-      const days = getNextSevenDays();
+      const days = getCurrentWeekDays();
+      const todayValue = getTodayValue();
       const currentHour = new Date().getHours();
       const currentMinute = new Date().getMinutes();
 
@@ -384,13 +562,17 @@
 
       const headerBlank = document.createElement("div");
       headerBlank.className = "mini-cell mini-header mini-time-header";
+      headerBlank.style.gridColumn = "1";
+      headerBlank.style.gridRow = "1";
       miniCalendar.appendChild(headerBlank);
 
-      days.forEach((day, index) => {
+      days.forEach((day, dayIndex) => {
         const dayHeader = document.createElement("div");
-        dayHeader.className = "mini-cell mini-header";
+        dayHeader.className = `mini-cell mini-header${day.value === todayValue ? " is-today" : ""}`;
+        dayHeader.style.gridColumn = String(dayIndex + 2);
+        dayHeader.style.gridRow = "1";
         dayHeader.innerHTML = `
-          <strong>${index === 0 ? "Today" : day.weekday}</strong>
+          <strong>${day.value === todayValue ? "Today" : day.weekday}</strong>
           <span>${day.date}</span>
         `;
         miniCalendar.appendChild(dayHeader);
@@ -399,38 +581,41 @@
       for (let hour = 0; hour < 24; hour++) {
         const timeCell = document.createElement("div");
         timeCell.className = "mini-cell mini-time";
+        timeCell.style.gridColumn = "1";
+        timeCell.style.gridRow = String(hour + 2);
         timeCell.textContent = formatHour(hour);
         miniCalendar.appendChild(timeCell);
 
-        for (let day = 0; day < 7; day++) {
+        days.forEach((day, dayIndex) => {
           const cell = document.createElement("div");
-          cell.className = "mini-cell mini-slot";
-
-          const event = getTasks().find(e => {
-            const task = normalizeTaskTiming(e);
-            return Number(task.dayOffset || 0) === day && hour >= task.startHour && hour < task.endHour;
-          });
-
-          if (event) {
-            const task = normalizeTaskTiming(event);
-            const eventDiv = document.createElement("div");
-            eventDiv.className = "mini-event";
-            eventDiv.classList.add(event.category || "school");
-            eventDiv.textContent = hour === task.startHour
-              ? `${event.name || event.title} (${getTaskTimeLabel(task)})`
-              : `${event.name || event.title} continued`;
-
-            eventDiv.onclick = function(e) {
-              e.stopPropagation();
-              openTaskModal(event.id);
-            };
-
-            cell.appendChild(eventDiv);
-          }
-
+          cell.className = `mini-cell mini-slot${day.value === todayValue ? " is-today" : ""}`;
+          cell.style.gridColumn = String(dayIndex + 2);
+          cell.style.gridRow = String(hour + 2);
           miniCalendar.appendChild(cell);
-        }
+        });
       }
+
+      getTasks().forEach((event) => {
+        const task = normalizeTaskTiming(event);
+        days.forEach((day, dayIndex) => {
+          if (!taskOccursOnDate(task, day.value)) return;
+
+          const eventDiv = document.createElement("button");
+          eventDiv.type = "button";
+          eventDiv.className = "mini-event schedule-block";
+          eventDiv.classList.add(event.category || "school");
+          eventDiv.style.gridColumn = String(dayIndex + 2);
+          eventDiv.style.gridRow = `${task.startHour + 2} / ${task.endHour + 2}`;
+          eventDiv.textContent = `${event.name || event.title} (${getTaskTimeLabel(task)})`;
+
+          eventDiv.onclick = function(e) {
+            e.stopPropagation();
+            openTaskModal(event.id);
+          };
+
+          miniCalendar.appendChild(eventDiv);
+        });
+      });
 
       const line = document.createElement("div");
       line.className = "current-time-line";
@@ -502,7 +687,7 @@
       selectedTaskId = null;
     }
 
-    function saveTaskChanges() {
+    async function saveTaskChanges() {
       const taskName = modalTaskName.value.trim();
       if (!taskName) {
         return;
@@ -522,19 +707,27 @@
         repeatDays: Array.from(document.querySelectorAll("input[name=\"modalRepeatDays\"]:checked")).map((input) => input.value)
       };
 
+      const conflict = findHighImportanceConflict(taskData, selectedTaskId || "");
+      if (conflict) {
+        alert(getHighImportanceConflictMessage(taskData, conflict));
+        return;
+      }
+
       if (selectedTaskId) {
         updateTask(selectedTaskId, taskData);
       } else {
         createTask(taskData);
       }
 
+      await waitForTaskDatabaseWrites();
       closeTaskModal();
       renderMiniCalendar();
     }
 
-    function deleteTask() {
+    async function deleteTask() {
       if (selectedTaskId) {
         deleteSavedTask(selectedTaskId);
+        await waitForTaskDatabaseWrites();
       }
 
       closeTaskModal();
@@ -549,7 +742,12 @@
 
     fillHourDropdown();
     document.addEventListener("tasksSynced", renderMiniCalendar);
+    document.addEventListener("tasksChanged", renderMiniCalendar);
+    document.addEventListener("tasksSynced", renderAiStatusBubble);
+    document.addEventListener("tasksChanged", renderAiStatusBubble);
     renderMiniCalendar();
+    renderAiStatusBubble();
+    setInterval(renderAiStatusBubble, 1000);
     setInterval(renderMiniCalendar, 60000);
   </script>
 

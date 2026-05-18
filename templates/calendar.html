@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='/calendar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}?v=20260518-no-overlap">
+  <link rel="stylesheet" href="{{ url_for('static', path='/calendar.css') }}?v=20260518-no-overlap">
   <title>Calendar</title>
 </head>
 
@@ -26,8 +26,8 @@
   </section>
 
   <section class="view-tabs" aria-label="Calendar views">
-    <button type="button" class="view-tab" data-view="week">Week</button>
-    <button type="button" class="view-tab is-active" data-view="month">Month</button>
+    <button type="button" class="view-tab is-active" data-view="week">Week</button>
+    <button type="button" class="view-tab" data-view="month">Month</button>
     <button type="button" class="view-tab" data-view="year">Year</button>
   </section>
 
@@ -39,11 +39,11 @@
 <script>
   const calendarTitle = document.getElementById("calendarTitle");
   const calendarContent = document.getElementById("calendarContent");
-  let currentView = "month";
+  let currentView = "week";
   let currentDate = new Date();
 
   function dateKey(date) {
-    return date.toISOString().slice(0, 10);
+    return formatDateValue(date);
   }
 
   function parseTaskDate(task) {
@@ -52,7 +52,7 @@
 
   function tasksForDate(date) {
     const key = dateKey(date);
-    return getTasks().filter((task) => task.due === key);
+    return getTasks().filter((task) => taskOccursOnDate(task, key));
   }
 
   function renderTaskPills(tasks) {
@@ -70,23 +70,67 @@
     start.setDate(currentDate.getDate() - currentDate.getDay());
     calendarTitle.textContent = `Week of ${start.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
 
-    calendarContent.className = "week-view";
+    const todayValue = getTodayValue();
+    const days = getCurrentWeekDays(start);
+    calendarContent.className = "week-schedule-scroll";
     calendarContent.innerHTML = "";
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + i);
-      const day = document.createElement("article");
-      day.className = "week-day";
-      day.innerHTML = `
-        <header>
-          <strong>${date.toLocaleDateString("en-US", { weekday: "short" })}</strong>
-          <span>${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-        </header>
-        <div class="day-tasks">${renderTaskPills(tasksForDate(date)) || '<p class="empty-calendar-text">No tasks</p>'}</div>
+    const grid = document.createElement("div");
+    grid.className = "week-schedule-grid";
+
+    const headerBlank = document.createElement("div");
+    headerBlank.className = "week-cell week-header week-time-header";
+    headerBlank.style.gridColumn = "1";
+    headerBlank.style.gridRow = "1";
+    grid.appendChild(headerBlank);
+
+    days.forEach((day, dayIndex) => {
+      const header = document.createElement("div");
+      header.className = `week-cell week-header${day.value === todayValue ? " is-today" : ""}`;
+      header.style.gridColumn = String(dayIndex + 2);
+      header.style.gridRow = "1";
+      header.innerHTML = `
+        <strong>${day.value === todayValue ? "Today" : day.weekday}</strong>
+        <span>${day.date}</span>
       `;
-      calendarContent.appendChild(day);
+      grid.appendChild(header);
+    });
+
+    for (let hour = 0; hour < 24; hour++) {
+      const timeCell = document.createElement("div");
+      timeCell.className = "week-cell week-time";
+      timeCell.style.gridColumn = "1";
+      timeCell.style.gridRow = String(hour + 2);
+      timeCell.textContent = formatScheduleHour(hour);
+      grid.appendChild(timeCell);
+
+      days.forEach((day, dayIndex) => {
+        const cell = document.createElement("div");
+        cell.className = `week-cell week-slot${day.value === todayValue ? " is-today" : ""}`;
+        cell.style.gridColumn = String(dayIndex + 2);
+        cell.style.gridRow = String(hour + 2);
+        grid.appendChild(cell);
+      });
     }
+
+    getTasks().forEach((task) => {
+      const normalized = normalizeTaskTiming(task);
+      days.forEach((day, dayIndex) => {
+        if (!taskOccursOnDate(normalized, day.value)) return;
+
+        const event = document.createElement("div");
+        event.className = `calendar-task week-event schedule-block ${task.category || "school"}`;
+        event.style.gridColumn = String(dayIndex + 2);
+        event.style.gridRow = `${normalized.startHour + 2} / ${normalized.endHour + 2}`;
+        event.innerHTML = `
+          <strong>${task.name || task.title}</strong>
+          <span>${getTaskTimeLabel(task)}</span>
+        `;
+        grid.appendChild(event);
+      });
+    });
+
+    calendarContent.appendChild(grid);
   }
 
   function renderMonth() {
@@ -145,8 +189,7 @@
         currentDate = monthDate;
         currentView = "month";
         setActiveView();
-        document.addEventListener("tasksSynced", renderCalendar);
-  renderCalendar();
+        renderCalendar();
       });
       calendarContent.appendChild(card);
     }
@@ -191,6 +234,8 @@
     renderCalendar();
   });
 
+  document.addEventListener("tasksSynced", renderCalendar);
+  document.addEventListener("tasksChanged", renderCalendar);
   renderCalendar();
 </script>
 

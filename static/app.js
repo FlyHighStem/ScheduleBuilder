@@ -7,6 +7,9 @@ const DEFAULT_TEST_USER = {
   theme: "dark",
   reminders: true
 };
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+let tasksCache = [];
+let taskDatabaseQueue = Promise.resolve();
 
 function readJson(key, fallback) {
   try {
@@ -54,10 +57,6 @@ function applyTheme(theme = "dark") {
   document.body.classList.toggle("light-theme", theme === "light");
 }
 
-function getTaskKey() {
-  return `${STORAGE_PREFIX}.tasks.${getCurrentUser().email}`;
-}
-
 function getTaskApiUrl(path = "") {
   const userEmail = encodeURIComponent(getCurrentUser().email);
   return `/api/tasks${path}?user_email=${userEmail}`;
@@ -75,30 +74,50 @@ async function syncTasksFromDatabase() {
   }
 }
 
-function saveTaskToDatabase(task) {
-  fetch(getTaskApiUrl(), {
+function notifyTasksChanged() {
+  document.dispatchEvent(new CustomEvent("tasksChanged"));
+}
+
+async function saveTaskToDatabase(task) {
+  const response = await fetch(getTaskApiUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(task)
-  }).catch((error) => console.warn("Task database save failed", error));
+  });
+  if (!response.ok) throw new Error("Task database save failed");
+  return response.json();
 }
 
-function deleteTaskFromDatabase(taskId) {
-  fetch(getTaskApiUrl(`/${encodeURIComponent(taskId)}`), { method: "DELETE" })
-    .catch((error) => console.warn("Task database delete failed", error));
+async function deleteTaskFromDatabase(taskId) {
+  const response = await fetch(getTaskApiUrl(`/${encodeURIComponent(taskId)}`), { method: "DELETE" });
+  if (!response.ok) throw new Error("Task database delete failed");
+  return response.json();
 }
 
-function clearTasksFromDatabase() {
-  fetch(getTaskApiUrl(), { method: "DELETE" })
-    .catch((error) => console.warn("Task database clear failed", error));
+async function clearTasksFromDatabase() {
+  const response = await fetch(getTaskApiUrl(), { method: "DELETE" });
+  if (!response.ok) throw new Error("Task database clear failed");
+  return response.json();
+}
+
+function queueTaskDatabaseWrite(operation) {
+  taskDatabaseQueue = taskDatabaseQueue
+    .then(operation)
+    .catch((error) => console.warn(error.message || "Task database write failed", error));
+  return taskDatabaseQueue;
+}
+
+function waitForTaskDatabaseWrites() {
+  return taskDatabaseQueue;
 }
 
 function getTasks() {
-  return readJson(getTaskKey(), []);
+  return tasksCache;
 }
 
 function saveTasks(tasks) {
-  writeJson(getTaskKey(), tasks);
+  tasksCache = Array.isArray(tasks) ? tasks : [];
+  notifyTasksChanged();
 }
 
 function normalizeHour(value, fallback) {
@@ -126,6 +145,13 @@ function formatScheduleHour(hour) {
   return `${h} ${suffix}`;
 }
 
+function formatDateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getNextSevenDays() {
   const today = new Date();
   const days = [];
@@ -136,7 +162,7 @@ function getNextSevenDays() {
 
     days.push({
       offset: i,
-      value: date.toISOString().slice(0, 10),
+      value: formatDateValue(date),
       weekday: date.toLocaleDateString("en-US", { weekday: "short" }),
       date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       label: i === 0
@@ -146,6 +172,25 @@ function getNextSevenDays() {
   }
 
   return days;
+}
+
+function getCurrentWeekDays(baseDate = new Date()) {
+  const start = new Date(baseDate);
+  start.setHours(12, 0, 0, 0);
+  start.setDate(baseDate.getDate() - baseDate.getDay());
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+
+    return {
+      offset: index,
+      value: formatDateValue(date),
+      weekday: date.toLocaleDateString("en-US", { weekday: "short" }),
+      date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      label: date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+    };
+  });
 }
 
 function fillDayDropdown(select, selectedOffset = 0) {
@@ -162,7 +207,7 @@ function fillDayDropdown(select, selectedOffset = 0) {
 }
 
 function getTodayValue() {
-  return new Date().toISOString().slice(0, 10);
+  return formatDateValue(new Date());
 }
 
 function getDayOffsetFromDate(dateValue) {
@@ -171,6 +216,62 @@ function getDayOffsetFromDate(dateValue) {
   const date = new Date(`${dateValue}T12:00:00`);
   const diff = Math.round((date - today) / 86400000);
   return Math.max(0, diff);
+}
+
+function dateFromValue(dateValue) {
+  return new Date(`${dateValue}T12:00:00`);
+}
+
+function getWeekdayKey(dateValue) {
+  return WEEKDAY_KEYS[dateFromValue(dateValue).getDay()];
+}
+
+function taskOccursOnDate(task, dateValue) {
+  if (task.due === dateValue) return true;
+
+  const repeatDays = Array.isArray(task.repeatDays) ? task.repeatDays : [];
+  if (!repeatDays.length) return false;
+  if (!repeatDays.includes(getWeekdayKey(dateValue))) return false;
+
+  if (!task.due) return true;
+  return dateFromValue(dateValue) >= dateFromValue(task.due);
+}
+
+function timesOverlap(firstTask, secondTask) {
+  const first = normalizeTaskTiming(firstTask);
+  const second = normalizeTaskTiming(secondTask);
+  return first.startHour < second.endHour && second.startHour < first.endHour;
+}
+
+function findHighImportanceConflict(candidate, excludeTaskId = "") {
+  if (!candidate?.due) return null;
+  const candidateDates = getCandidateOccurrenceDates(candidate);
+  return getTasks().find((task) => {
+    if (task.id === excludeTaskId) return false;
+    return candidateDates.some((dateValue) => taskOccursOnDate(task, dateValue) && timesOverlap(candidate, task));
+  }) || null;
+}
+
+function getHighImportanceConflictMessage(candidate, conflict) {
+  return `${candidate.name || candidate.title || "That task"} overlaps with ${conflict.name || conflict.title}. Events cannot overlap. Pick a different open time.`;
+}
+
+function getCandidateOccurrenceDates(candidate) {
+  if (!candidate?.due) return [];
+  const dates = new Set([candidate.due]);
+  const repeatDays = Array.isArray(candidate.repeatDays) ? candidate.repeatDays : [];
+  if (repeatDays.length) {
+    const startDate = dateFromValue(candidate.due);
+    for (let offset = 0; offset < 30; offset++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + offset);
+      const dateValue = formatDateValue(date);
+      if (taskOccursOnDate(candidate, dateValue)) {
+        dates.add(dateValue);
+      }
+    }
+  }
+  return Array.from(dates);
 }
 
 function getTaskTimeLabel(task) {
@@ -200,7 +301,7 @@ function createTask(task) {
   });
   tasks.push(newTask);
   saveTasks(tasks);
-  saveTaskToDatabase(newTask);
+  queueTaskDatabaseWrite(() => saveTaskToDatabase(newTask));
   return newTask;
 }
 
@@ -212,17 +313,19 @@ function updateTask(taskId, updates) {
   });
   saveTasks(tasks);
   const updatedTask = tasks.find((task) => task.id === taskId);
-  if (updatedTask) saveTaskToDatabase(updatedTask);
+  if (updatedTask) {
+    queueTaskDatabaseWrite(() => saveTaskToDatabase(updatedTask));
+  }
 }
 
 function deleteSavedTask(taskId) {
   saveTasks(getTasks().filter((task) => task.id !== taskId));
-  deleteTaskFromDatabase(taskId);
+  queueTaskDatabaseWrite(() => deleteTaskFromDatabase(taskId));
 }
 
 function clearTasks() {
   saveTasks([]);
-  clearTasksFromDatabase();
+  queueTaskDatabaseWrite(clearTasksFromDatabase);
 }
 
 function showMessage(element, text, isError = false) {
@@ -267,16 +370,11 @@ function setupNavbarMenus() {
     profileForm.email.value = user.email || "";
     profileForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      const oldTaskKey = getTaskKey();
       saveUser({
         ...getCurrentUser(),
         fullname: profileForm.fullname.value.trim() || "Test User",
         email: profileForm.email.value.trim() || DEFAULT_TEST_USER.email
       });
-      const newTaskKey = getTaskKey();
-      if (oldTaskKey !== newTaskKey && !localStorage.getItem(newTaskKey)) {
-        localStorage.setItem(newTaskKey, localStorage.getItem(oldTaskKey) || "[]");
-      }
       location.reload();
     });
   }

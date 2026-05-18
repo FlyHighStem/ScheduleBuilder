@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tasks</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='/shared.css') }}?v=20260518-no-overlap">
+  <link rel="stylesheet" href="{{ url_for('static', path='/tasks.css') }}?v=20260518-no-overlap">
 </head>
 <body>
 {% include 'navbar.html' %}
@@ -211,7 +211,7 @@
       button.addEventListener("click", () => openTaskModal(button.dataset.openTaskModal));
     });
 
-    taskForm.addEventListener("submit", (event) => {
+    taskForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const taskData = {
         name: taskForm.name.value.trim(),
@@ -240,25 +240,28 @@
         showMessage(taskNotice, "Task saved to this computer.");
       }
 
+      await waitForTaskDatabaseWrites();
       closeDialog(taskDialog);
       renderTasks();
     });
 
-    document.getElementById("confirmDeleteButton").addEventListener("click", () => {
+    document.getElementById("confirmDeleteButton").addEventListener("click", async () => {
       if (!selectedTaskId) return;
       deleteSavedTask(selectedTaskId);
+      await waitForTaskDatabaseWrites();
       selectedTaskId = null;
       closeDialog(deleteDialog);
       showMessage(taskNotice, "Task deleted.");
       renderTasks();
     });
 
-    document.getElementById("clearTasksButton").addEventListener("click", () => {
+    document.getElementById("clearTasksButton").addEventListener("click", async () => {
       if (!getTasks().length) {
         showMessage(taskNotice, "There are no tasks to clear.", true);
         return;
       }
       clearTasks();
+      await waitForTaskDatabaseWrites();
       selectedTaskId = null;
       showMessage(taskNotice, "All tasks cleared.");
       renderTasks();

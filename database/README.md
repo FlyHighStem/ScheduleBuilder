@@ -1,8 +1,10 @@
-# Database Integration Placeholder
+# Database Layer
 
-This folder is reserved for the future database work.
+This folder is the local database layer for ScheduleBuilder.
 
-The app currently saves test-user tasks in browser `localStorage` through `static/app.js`. When the real database is added, this folder is the intended place for:
+The test-user schedule data is stored in the project SQLite file at `schedulebuilder.db` through the FastAPI routes in `main.py`. Browser storage is only used for lightweight login/session-style UI state such as the current test user and theme.
+
+When the team adds the future shared database, this folder is the intended place for:
 
 - database connection setup
 - table/model definitions
@@ -17,4 +19,4 @@ Suggested future files:
 - `task_repository.py`
 - `user_repository.py`
 
-Keep the API surface in `main.py` small so the frontend can switch from local storage to backend database calls without rewriting the whole UI.
+Keep the API surface in `main.py` small so the frontend can switch from local SQLite to the shared backend without rewriting the whole UI.

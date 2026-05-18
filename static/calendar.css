@@ -71,7 +71,7 @@ body {
   border-radius: 24px;
   padding: 20px;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .month-view {
@@ -150,11 +150,93 @@ body {
   background: #ffc400;
 }
 
-.week-view {
+.week-schedule-scroll {
+  height: min(680px, calc(100vh - 260px));
+  min-height: 420px;
+  overflow: auto;
+  border: 1px solid #333;
+  border-radius: 16px;
+}
+
+.week-schedule-grid {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(7, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: 78px repeat(7, minmax(130px, 1fr));
+  grid-template-rows: 58px repeat(24, 56px);
   min-width: 980px;
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+}
+
+.week-cell {
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+
+.week-header {
+  min-height: 0;
+  background: #2d2d2d;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.week-header strong {
+  color: #c48afb;
+}
+
+.week-header span {
+  color: #bdbdbd;
+  font-size: 0.82rem;
+}
+
+.week-time {
+  min-height: 0;
+  background: #121212;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+  position: sticky;
+  left: 0;
+  z-index: 6;
+}
+
+.week-time-header {
+  left: 0;
+  z-index: 32;
+}
+
+.week-slot {
+  min-height: 0;
+  background: #181818;
+  padding: 5px;
+}
+
+.week-event.schedule-block {
+  z-index: 5;
+  margin: 5px;
+  min-height: 0;
+  overflow: hidden;
+  align-self: stretch;
+}
+
+.week-header.is-today,
+.week-slot.is-today {
+  background: #2f2738;
+}
+
+.week-header.is-today {
+  background: #4a375c;
+  box-shadow: inset 0 3px 0 #c48afb;
 }
 
 .week-day,
@@ -214,6 +296,10 @@ body.light-theme .nav-calendar-btn,
 body.light-theme .today-btn,
 body.light-theme .view-tab,
 body.light-theme .week-day,
+body.light-theme .week-schedule-scroll,
+body.light-theme .week-header,
+body.light-theme .week-time,
+body.light-theme .week-slot,
 body.light-theme .year-month,
 body.light-theme .month-day {
   background: #ffffff;
@@ -221,7 +307,31 @@ body.light-theme .month-day {
   border-color: #d9dce3;
 }
 
-body.light-theme .month-header {
+body.light-theme .week-header {
+  background: #e8eaf0;
+}
+
+body.light-theme .week-time {
+  background: #e8eaf0;
+  color: #4a4d57;
+}
+
+body.light-theme .week-slot {
+  background: #f4f5f7;
+}
+
+body.light-theme .week-header.is-today,
+body.light-theme .week-slot.is-today {
+  background: #efe3fb;
+}
+
+body.light-theme .week-header.is-today {
+  background: #e4cdf8;
+}
+
+body.light-theme .month-header,
+body.light-theme .week-cell,
+body.light-theme .week-schedule-grid {
   border-color: #d9dce3;
 }
 
